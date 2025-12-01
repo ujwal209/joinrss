@@ -2,12 +2,17 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { FaArrowRight, FaCheckCircle } from 'react-icons/fa';
+// 1. Import Firebase dependencies
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'; 
+// Note: Adjust '../lib/firebase' if your file is in a different folder structure
+import { db } from '@/lib/firebase'; 
 
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
     name: '',
     mobileNumber: '',
     email: '',
+    apartment: '',
     locality: '',
     pincode: '',
     age: '',
@@ -46,8 +51,6 @@ const RegistrationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Prevent any default form behavior that might cause scrolling
     e.stopPropagation();
 
     if (formData.interests.length === 0) {
@@ -60,20 +63,25 @@ const RegistrationForm = () => {
     setSubmitMessage("");
 
     try {
-      const response = await fetch("/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+      // --- Firebase Submission Only ---
+      
+      const docRef = await addDoc(collection(db, "registrations"), {
+        ...formData,
+        submittedAt: serverTimestamp(), // Use server timestamp for consistency
+        source: 'web-form'
       });
 
-      if (!response.ok) throw new Error("Failed to submit");
+      console.log("Document written with ID: ", docRef.id);
 
       setSubmitMessage("Thank you for your interest! We have received your information.");
       setSubmitted(true);
+      
+      // Reset Form
       setFormData({
         name: "",
         mobileNumber: "",
         email: "",
+        apartment: "",
         locality: "",
         pincode: "",
         age: "",
@@ -93,7 +101,6 @@ const RegistrationForm = () => {
   // Scroll to success message when it appears
   useEffect(() => {
     if (submitted && successRef.current) {
-      // Use a small timeout to ensure the DOM has updated
       setTimeout(() => {
         successRef.current?.scrollIntoView({ 
           behavior: 'smooth', 
@@ -108,7 +115,7 @@ const RegistrationForm = () => {
     { label: 'Kishora Bharathi (12-16 years)', value: 'kishora-bharathi' },
     { label: 'Yuva (boys and girls of 18-28 years)', value: 'yuva' },
     { label: 'IT Milan (male working professionals)', value: 'it-milan' },
-    { label: 'Sevika Samithi (female homemakers and professionals)', value: 'sevika-samithi' },
+    { label: 'Sevika Samithi (female working professionals and homemakers)', value: 'sevika-samithi' },
   ];
 
   if (submitted) {
@@ -152,6 +159,7 @@ const RegistrationForm = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
+        {/* Row 1: Name and Mobile */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <div className="space-y-2">
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -186,6 +194,7 @@ const RegistrationForm = () => {
           </div>
         </div>
 
+        {/* Row 2: Email */}
         <div className="space-y-2">
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">
             Email Address <span className="text-red-500">*</span>
@@ -202,7 +211,23 @@ const RegistrationForm = () => {
           />
         </div>
 
+        {/* Row 3: Apartment (New) and Locality */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <div className="space-y-2">
+            <label htmlFor="apartment" className="block text-sm font-medium text-gray-700">
+              Apartment / Flat No <span className="text-gray-400 font-normal">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              id="apartment"
+              name="apartment"
+              value={formData.apartment}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E65911] focus:border-transparent transition-all duration-300"
+              placeholder="e.g. Flat 101, Sunshine Apts"
+            />
+          </div>
+
           <div className="space-y-2">
             <label htmlFor="locality" className="block text-sm font-medium text-gray-700">
               Locality <span className="text-red-500">*</span>
@@ -218,7 +243,10 @@ const RegistrationForm = () => {
               placeholder="Enter your locality"
             />
           </div>
+        </div>
 
+        {/* Row 4: Pincode and Age */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <div className="space-y-2">
             <label htmlFor="pincode" className="block text-sm font-medium text-gray-700">
               Pincode <span className="text-red-500">*</span>
@@ -234,23 +262,24 @@ const RegistrationForm = () => {
               placeholder="Enter your pincode"
             />
           </div>
+
+          <div className="space-y-2">
+            <label htmlFor="age" className="block text-sm font-medium text-gray-700">
+              Age <span className="text-gray-400 font-normal">(Optional)</span>
+            </label>
+            <input
+              type="number"
+              id="age"
+              name="age"
+              value={formData.age}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E65911] focus:border-transparent transition-all duration-300"
+              placeholder="Enter your age"
+            />
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="age" className="block text-sm font-medium text-gray-700">
-            Age (Optional)
-          </label>
-          <input
-            type="number"
-            id="age"
-            name="age"
-            value={formData.age}
-            onChange={handleInputChange}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E65911] focus:border-transparent transition-all duration-300"
-            placeholder="Enter your age"
-          />
-        </div>
-
+        {/* Areas of Interest */}
         <div className="space-y-4">
           <label className="block text-sm font-medium text-gray-700">
             Area of Interest (select one or more) <span className="text-red-500">*</span>
@@ -284,6 +313,7 @@ const RegistrationForm = () => {
           )}
         </div>
         
+        {/* Additional Notes */}
         <div className="space-y-2">
           <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
             Additional Notes
@@ -299,6 +329,7 @@ const RegistrationForm = () => {
           />
         </div>
 
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={isSubmitting}

@@ -30,40 +30,6 @@ const BhajanSandhya = React.forwardRef<HTMLElement, { id: string }>(({ id }, ref
           </h2>
           <div className="w-20 sm:w-24 h-1 bg-gradient-to-r from-[#7c0f00] to-[#E65911] mb-4 md:mb-6 rounded-full"></div>
         </div>
-
-        {/* Time and Location - IMPROVED RESPONSIVENESS */}
-        <div className="bg-white p-5 sm:p-6 md:p-8 rounded-xl md:rounded-2xl shadow-lg border border-[#E65911]/20 mb-8 md:mb-10 lg:mb-12 max-w-3xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-center items-stretch md:items-center gap-4 md:gap-6 lg:gap-8">
-            {/* Time Section */}
-            <div className="flex items-center justify-center md:justify-start flex-1">
-              <div className="p-3 sm:p-4 rounded-full bg-[#FFE5DE] flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
-                <FaCalendarAlt className="text-xl sm:text-2xl text-[#7c0f00]" />
-              </div>
-              <div className="text-center md:text-left">
-                <p className="text-xs sm:text-sm text-gray-500">Every Saturday</p>
-                <p className="text-base sm:text-lg md:text-xl font-semibold text-[#7c0f00] whitespace-nowrap">6:00 PM to 6:30 PM</p>
-              </div>
-            </div>
-
-            {/* Divider - Hidden on mobile, visible on medium screens and up */}
-            <div className="hidden md:block w-px h-10 sm:h-12 md:h-14 bg-gradient-to-b from-transparent via-[#E65911] to-transparent self-center"></div>
-            <div className="md:hidden w-full h-px bg-gradient-to-r from-transparent via-[#E65911] to-transparent my-2"></div>
-
-            {/* Location Section - IMPROVED RESPONSIVENESS */}
-            <div className="flex items-center justify-center md:justify-start flex-1">
-              <div className="p-3 sm:p-4 rounded-full bg-[#FFE5DE] flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
-                <FaMapMarkerAlt className="text-xl sm:text-2xl text-[#7c0f00]" />
-              </div>
-              <div className="text-center md:text-left min-w-0">
-                <p className="text-xs sm:text-sm text-gray-500">Location</p>
-                <p className="text-base sm:text-lg md:text-xl font-semibold text-[#7c0f00] break-words">
-                  Shri Shakti Ganapathi temple, Girinagar
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Info Cards */}
         <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 sm:gap-5 mb-12 md:mb-14 lg:mb-16">
           <div className="bg-white p-4 sm:p-5 rounded-xl md:rounded-2xl border border-[#E65911]/20 shadow-md md:shadow-lg flex flex-col items-center text-center w-full sm:max-w-[200px] md:max-w-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
