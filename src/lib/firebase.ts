@@ -12,6 +12,24 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// Debugging: Check if config is loaded
+if (!firebaseConfig.apiKey) {
+  console.error("Firebase API Key is missing! Check your .env file.");
+} else {
+  console.log("Firebase initialized with project:", firebaseConfig.projectId);
+}
+
 const db = getFirestore(app);
+
+// Enable Offline Persistence
+import { enableIndexedDbPersistence } from "firebase/firestore";
+enableIndexedDbPersistence(db).catch((err) => {
+  if (err.code == 'failed-precondition') {
+      console.warn('Persistence failed: Multiple tabs open');
+  } else if (err.code == 'unimplemented') {
+      console.warn('Persistence failed: Browser not supported');
+  }
+});
 
 export { db };

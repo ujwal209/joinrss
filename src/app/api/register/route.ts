@@ -6,6 +6,15 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
+    // Check for credentials
+    if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
+      console.error("Missing Google Sheets credentials (GOOGLE_CLIENT_EMAIL or GOOGLE_PRIVATE_KEY)");
+      // We return 200 to not break the client if just this fails, or 500 if strict. 
+      // User asked for it to be written, so 500 is appropriate to signal failure in logs, 
+      // but maybe fail gracefully on client.
+      return NextResponse.json({ success: false, error: "Server Configuration Error" }, { status: 500 });
+    }
+
     // Use environment variables for service account
     const auth = new google.auth.GoogleAuth({
       credentials: {
@@ -25,6 +34,7 @@ export async function POST(req: Request) {
         body.name || "",
         body.mobileNumber || "",
         body.email || "",
+        body.apartment || "", // Added apartment
         body.locality || "",
         body.pincode || "",
         body.age || "",

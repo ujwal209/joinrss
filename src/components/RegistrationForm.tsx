@@ -63,17 +63,40 @@ const RegistrationForm = () => {
     setSubmitMessage("");
 
     try {
-      // --- Firebase Submission Only ---
-      
-      const docRef = await addDoc(collection(db, "registrations"), {
-        ...formData,
-        submittedAt: serverTimestamp(), // Use server timestamp for consistency
-        source: 'web-form'
+      // 1. Fire and Forget Google Sheets (don't block UI)
+      // We will log the result but not hold up the user flow for it.
+      const sheetsPromise = fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+      .then(res => {
+         if(!res.ok) console.error("Google Sheets API rejected:", res.status);
+         else console.log("Google Sheets submitted");
+      })
+      .catch(err => console.error("Google Sheets API error:", err));
+
+      // 2. Firebase Submission with Timeout
+      // Since we enabled persistence, this should resume in background if network is slow.
+      // But we still want to show a success message quickly.
+      const firebasePromise = addDoc(collection(db, "registrations"), {
+          ...formData,
+          submittedAt: serverTimestamp(),
+          source: 'web-form'
       });
 
-      console.log("Document written with ID: ", docRef.id);
+      // Race against a 4-second timer. If Firebase takes longer, we assume it's handling it in background/offline mode.
+      const TIMEOUT_MS = 4000;
+      await Promise.race([
+        firebasePromise,
+        new Promise(resolve => setTimeout(resolve, TIMEOUT_MS))
+      ]);
 
-      setSubmitMessage("Thank you for your interest! We have received your information.");
+      // Whether it finished or timed out, we show success to the user.
+      // If it failed with an error (e.g. permission denied), it would have thrown.
+      
+      console.log("Submission flow complete (optimistic)");
+      setSubmitMessage("Thank you! Your information has been recorded.");
       setSubmitted(true);
       
       // Reset Form
@@ -89,9 +112,10 @@ const RegistrationForm = () => {
         notes: "",
       });
       setInterestsError(false);
-      
+
     } catch (error) {
       console.error("Submission error:", error);
+      // Only show error if it's a hard failure (like validation or permission denied)
       setSubmitMessage("❌ An error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
